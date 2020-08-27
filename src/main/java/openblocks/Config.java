@@ -391,9 +391,15 @@ public class Config {
 	@OnLineModifiable
 	@ConfigProperty(category = "hangglider", name = "enableThermal", comment = "Enable a whole new level of hanggliding experience through thermal lift. See keybindings for acoustic vario controls")
 	public static boolean hanggliderEnableThermal = true;
-
+	
+	@OnLineModifiable
+	@ConfigProperty(category = "skyblock", name = "renderingEnabled", comment = "Enables skyblock rendering. Disable when there are graphic glitches or performance problems. Requires resource reload after change.")
+	public static boolean renderSkyBlocks = true;
+	
+	@ConfigProperty(category = "skyblock", name = "optifineOverride", comment = "Forces skyblock rendering even when Optifine is enabled (warning: skyblocks may be incompatible with shaders!)")
+	public static boolean skyBlocksOptifineOverride = false;
+	
 	public static void register() {
-		@SuppressWarnings("unchecked")
 		final List<IRecipe> recipeList = CraftingManager.getInstance().getRecipeList();
 
 		// There is no fail checking here because if the Generic item fails,

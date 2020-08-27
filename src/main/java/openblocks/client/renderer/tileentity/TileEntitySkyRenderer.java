@@ -1,18 +1,24 @@
 package openblocks.client.renderer.tileentity;
 
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.client.MinecraftForgeClient;
+import openblocks.Config;
 import openblocks.client.StencilSkyRenderer;
 import openblocks.common.block.BlockSky;
 import openmods.Log;
+import openmods.reflection.MethodAccess;
+import openmods.reflection.MethodAccess.Function0;
 import openmods.renderer.StencilRendererHandler;
 import openmods.stencil.StencilBitAllocation;
 import openmods.stencil.StencilPoolManager;
 import openmods.utils.ColorUtils.RGB;
 import openmods.utils.render.RenderUtils;
 import org.lwjgl.opengl.GL11;
+
+import cpw.mods.fml.client.FMLClientHandler;
 
 public class TileEntitySkyRenderer extends TileEntitySpecialRenderer {
 
@@ -25,6 +31,7 @@ public class TileEntitySkyRenderer extends TileEntitySpecialRenderer {
 	public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partialTickTime) {
 		int meta = te.getBlockMetadata();
 		if (!BlockSky.isActive(meta)) return;
+		if (!checkActivationConditions()) return;
 
 		if (!initialized) {
 			intialize();
@@ -117,5 +124,32 @@ public class TileEntitySkyRenderer extends TileEntitySpecialRenderer {
 		GL11.glColorMask(true, true, true, true);
 		GL11.glStencilMask(0);
 		GL11.glDisable(GL11.GL_STENCIL_TEST);
+	}
+	
+	private static boolean checkActivationConditions() {
+		if (!Config.renderSkyBlocks) {
+			return false;
+		}
+
+		if (FMLClientHandler.instance().hasOptifine() && optifineShadersEnabled() && !Config.skyBlocksOptifineOverride) {
+			return false;
+		}
+
+		if (!OpenGlHelper.isFramebufferEnabled()) {
+			return false;
+		}
+		return true;
+	}
+	
+	private static boolean optifineShadersEnabled() {
+		try {
+			final Class<?> config = Class.forName("Config");
+			final Function0<Boolean> isShaders = MethodAccess.create(boolean.class, config, "isShaders");
+			return isShaders.call(null);
+		}
+		catch (Exception e) {}
+
+		// can't tell, assume the worst
+		return true;
 	}
 }
